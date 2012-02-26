@@ -1,0 +1,8 @@
+.gaedata/
+.gaedata/*
+.pyc
+*.pyc
+.pyco
+*.py~
+README~
+.*~
