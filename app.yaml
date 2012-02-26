@@ -6,4 +6,7 @@ threadsafe: no
 
 handlers:
 - url: /.*
+  script: main.py
+handlers:
+- url: /.*
   script: helloworld.py
