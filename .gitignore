@@ -6,3 +6,6 @@
 *.py~
 README~
 .*~
+settings.py
+site-verif
+*.yaml~

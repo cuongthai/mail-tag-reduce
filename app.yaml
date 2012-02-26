@@ -5,8 +5,13 @@ api_version: 1
 threadsafe: no
 
 handlers:
-- url: /.*
+- url: /
   script: main.py
-handlers:
-- url: /.*
-  script: helloworld.py
+  login: required
+- url: /imapoauth_.*
+  script: imapoauth.py
+  
+- url: /(google(.*).html)
+  static_files: site-verif/\1
+  upload: site-verif/(google(.*).html)
+

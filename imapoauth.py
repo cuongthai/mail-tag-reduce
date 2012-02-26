@@ -89,5 +89,8 @@ class RequestTokenCallback(webapp.RequestHandler):
 		
 def main():
 	application = webapp.WSGIApplication([('/imapoauth_step1',Fetcher),('imapoauth_step2',RequestTokenCallback)],debug=True)
-if __name__ = '__main__':
+	
+	run_wsgi_app(application)
+	
+if __name__ == '__main__':
 	main()
