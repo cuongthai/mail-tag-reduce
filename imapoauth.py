@@ -21,6 +21,7 @@ from google.appengine.api import users
 import gdata.gauth
 import gdata.docs.client
 import settings
+from contextIO2 import ContextIO, Account
 
 gdocs=gdata.docs.client.DocsClient(source=settings.APPENGINE_APP_NAME)
 
@@ -58,6 +59,7 @@ class Fetcher(webapp.RequestHandler):
 		
 		# Generate and redirect to the authorization URL.
 		auth_url = '%s' % request_token.generate_authorization_url()
+		
 		self.redirect(auth_url)
 		
 class RequestTokenCallback(webapp.RequestHandler):
@@ -84,11 +86,37 @@ class RequestTokenCallback(webapp.RequestHandler):
 		
 		import logging
 		logging.info('auth_token %s request_token %s'%(str(gdocs.auth_token),str(request_token)))
-		
+		# Now that we have a long-lived access token giving us access to
+		# the user's mailbox, the last step is to add the mailbox in our
+		# Context.IO account. 
+		#
+		# For this to work, the Google consumer key and secret used to obtain
+		# access tokens must be configured in your Context.IO account. See:
+		# https://console.context.io/#settings/imapoauth
+		ctxIO = ContextIO(consumer_key=settings.CONTEXTIO_OAUTH_KEY,consumer_secret=settings.CONTEXTIO_OAUTH_SECRET)
+		newAccount = ctxIO.post_account(email=current_user.email(),first_name=current_user.nickname())
+		newSource = newAccount.post_source(email=current_user.email(), 
+						username=current_user.email(),
+						server='imap.gmail.com',
+						provider_token=gdocs.auth_token.token,
+						provider_token_secret=gdocs.auth_token.token_secret,
+						provider_consumer_key=settings.APPENGINE_CONSUMER_KEY)
+						
+				
+		# OPTIONAL:
+		# If we want to keep the access token in our application persistent
+		# storage, uncomment the 2 lines below would be used. Note that once
+		# the mailbox has been added to our Context.IO, this is not required.
+
+		#access_token_key = 'access_token_%s' % current_user.user_id()
+		#gdata.gauth.ae_save(request_token, access_token_key)
+
 		self.redirect('/')
 		
 def main():
-	application = webapp.WSGIApplication([('/imapoauth_step1',Fetcher),('imapoauth_step2',RequestTokenCallback)],debug=True)
+	application = webapp.WSGIApplication(
+	[('/imapoauth_step1',Fetcher),
+	 ('/imapoauth_step2',RequestTokenCallback)],debug=True)
 	
 	run_wsgi_app(application)
 	

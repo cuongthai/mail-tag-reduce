@@ -57,6 +57,8 @@ class ContextIO(object):
 
     def handle_request_error(self, response, body):
         try:
+            import logging        	
+            logging.info('body '+str(body))	
             body = json.loads(body)
             raise Exception('HTTP %(status)s - %(type)s %(code)s: %(message)s' % { 'status': response['status'], 'type': body['type'], 'code': body['code'], 'message': body['value']})
         except ValueError:
